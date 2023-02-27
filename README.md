@@ -31,5 +31,8 @@ To configure the plugin, follow these steps:
 - Fill in the API credentials provided by Lalamove.
 - Configure the delivery options, such as supported regions, delivery time, and price.
 - Click on "Save changes."
-- Usage
-- After configuring the plugin, customers can select the Lalamove delivery option during the checkout process on your website. The plugin will automatically calculate the price and delivery time based on the settings you defined.
+
+## Usage
+
+After configuring the plugin, customers can select the Lalamove delivery option during the checkout process on your website.
+The plugin will automatically calculate the price and delivery time based on the settings you defined.
