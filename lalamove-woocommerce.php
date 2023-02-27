@@ -6,94 +6,39 @@ Version: 1.0
 Author: stdmedoth (João Calisto)
 */
 
-// Add the Lalamove shipping method to WooCommerce
-add_filter('woocommerce_shipping_methods', 'add_lalamove_shipping_method');
-function add_lalamove_shipping_method($methods)
-{
-    $methods['lalamove_shipping_method'] = 'Lalamove_Shipping_Method';
-    return $methods;
-}
+require_once dirname(__FILE__) . '/includes/functions.php';
 
-// Define the Lalamove shipping method class
-class Lalamove_Shipping_Method extends WC_Shipping_Method
+class LalamovePlugin
 {
 
-    // Initialize the shipping method
     public function __construct()
     {
-        $this->id = 'lalamove_shipping_method';
-        $this->title = __('Lalamove Shipping Method', 'lalamove_shipping_method');
-        $this->method_description = __('Use Lalamove for fast and secure delivery', 'lalamove_shipping_method');
-        $this->supports = array(
-            'shipping-zones',
-            'instance-settings',
-            'instance-settings-modal',
-        );
-        $this->init();
-    }
-
-    // Define the settings for the shipping method
-    public function init()
-    {
-        $this->instance_form_fields = array(
-            'enabled' => array(
-                'title' => __('Enable Lalamove Shipping', 'lalamove_shipping_method'),
-                'type' => 'checkbox',
-                'default' => 'yes',
-                'description' => __('Enable this shipping method to use Lalamove for delivery', 'lalamove_shipping_method'),
-            ),
-            'api_key' => array(
-                'title' => __('Lalamove API Key', 'lalamove_shipping_method'),
-                'type' => 'text',
-                'description' => __('Enter your Lalamove API key', 'lalamove_shipping_method'),
-                'default' => '',
-            ),
-            'api_secret' => array(
-                'title' => __('Lalamove API Secret', 'lalamove_shipping_method'),
-                'type' => 'password',
-                'description' => __('Enter your Lalamove API secret', 'lalamove_shipping_method'),
-                'default' => '',
-            ),
-            'delivery_time' => array(
-                'title' => __('Delivery Time', 'lalamove_shipping_method'),
-                'type' => 'text',
-                'description' => __('Enter the estimated delivery time for Lalamove', 'lalamove_shipping_method'),
-                'default' => '2-4 hours',
-            ),
-            'delivery_price' => array(
-                'title' => __('Delivery Price', 'lalamove_shipping_method'),
-                'type' => 'text',
-                'description' => __('Enter the delivery price for Lalamove', 'lalamove_shipping_method'),
-                'default' => '10',
-            ),
-        );
-    }
-
-    // Calculate the shipping cost for an order
-    public function calculate_shipping($package = array())
-    {
-        $this->add_rate(array(
-            'id' => $this->id,
-            'label' => $this->title,
-            'cost' => $this->instance_settings['delivery_price'],
-            'package' => $package,
-        ));
-    }
-
-    // Validate the settings for the shipping method
-    public function validate_instance_settings_form()
-    {
-        $api_key = isset($_POST['instance_settings']['api_key']) ? $_POST['instance_settings']['api_key'] : '';
-        $api_secret = isset($_POST['instance_settings']['api_secret']) ? $_POST['instance_settings']['api_secret'] : '';
-
-        if (empty($api_key)) {
-            $this->errors[] = __('Please enter your Lalamove API key', 'lalamove_shipping_method');
+        if (lalamove_check_is_woocommerce_active()) {
+            require_once dirname(__FILE__) . '/includes/lalamove-woocommerce-method.php';
+            add_action('woocommerce_shipping_init', 'lalamove_shipping_method');
+            add_filter('woocommerce_shipping_methods', [$this, 'add_shipping_method']);
+        } else {
+            add_action('admin_notices', array($this, 'notice_activate_wc'));
         }
+    }
 
-        if (empty($api_secret)) {
-            $this->errors[] = __('Please enter your Lalamove API secret', 'lalamove_shipping_method');
-        }
+    public function add_shipping_method($methods)
+    {
+        $methods['lalamove_shipping_method'] = 'Lalamove_Shipping_Method';
+        return $methods;
+    }
 
-        return count($this->errors) == 0;
+    public function notice_activate_wc()
+    { ?>
+        <div class="error">
+            <p>
+                <?php
+                printf(esc_html__('Please install and activate %1$sWooCommerce%2$s to use Lalamove!'), '<a href="' . esc_url(admin_url('plugin-install.php?tab=search&s=WooCommerce&plugin-search-input=Search+Plugins')) . '">', '</a>');
+                ?>
+            </p>
+        </div>
+<?php
     }
 }
+
+$lalamove = new LalamovePlugin();
