@@ -14,7 +14,7 @@ class LalamovePlugin
     public function __construct()
     {
         if (lalamove_check_is_woocommerce_active()) {
-            require_once dirname(__FILE__) . '/includes/lalamove-woocommerce-method.php';
+            require_once dirname(__FILE__) . '/includes/lalamove-woocommerce-shipping-method.php';
             add_action('woocommerce_shipping_init', 'lalamove_shipping_method');
             add_filter('woocommerce_shipping_methods', [$this, 'add_shipping_method']);
         } else {
